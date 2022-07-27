@@ -59,6 +59,32 @@ class TodoListAPIView(generics.ListAPIView):
         return Response(data)
 
 
+class TodoListSortByDeadlineAPIView(generics.ListAPIView):
+    queryset = Todo.objects.all()
+    serializer_class = TodoSerializer
+
+    def filter_qs(self,val):
+        qs = self.get_queryset().filter(deadline__contains=val)
+        return qs
+
+    def list(self, request, *args, **kwargs):
+        qs = self.get_queryset()
+        lst = qs.annotate(date=TruncDay('deadline')).annotate(count=Count('id')).values('date')
+        data = {
+            'count': lst.count(),
+            'results': []
+        }
+
+        for i in lst:
+            data['results'].append({
+                'date': i.get('date'),
+                'count': i.get('count'),
+                'todo': [{'id': j.id, 'title': j.title} for j in self.filter_qs(i.get('date'))]
+            })
+
+        return Response(data)
+
+
 class TodoRUDAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Todo.objects.all()
     serializer_class = TodoSerializer

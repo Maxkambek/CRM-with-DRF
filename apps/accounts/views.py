@@ -16,6 +16,7 @@ from .serializers import RegisterSerializer, LoginSerializer, EmailVerificationS
     SetNewPasswordSerializer, AccountSerializer, TeamSerializer
 from .models import Account, Team
 from .utils import Util
+from ..tasks.permissions import IsAdminUser
 
 
 class UserRegisterView(generics.GenericAPIView):
@@ -100,7 +101,9 @@ class ResetPasswordView(generics.GenericAPIView):
 class PasswordTokenCheckView(APIView):
     permission_classes = (AllowAny,)
 
-    def get(self, request, uidb64, token):
+    def get(self, request):
+        uidb64 = request.GET.get('uidb64')
+        token = request.GET.get('token')
         try:
             id = smart_str(urlsafe_base64_encode(uidb64))
             user = Account.objects.filter(id=id).first()
@@ -123,10 +126,17 @@ class SetPasswordCompletedView(generics.GenericAPIView):
 
 
 class LogoutView(APIView):
-    def get(self, request, **kwargs):
-        user = request.user
-        logout(request)
-        return Response({'success': True, 'message': 'Successfully logout'})
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh_token"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class MyAccountAPIView(generics.RetrieveUpdateAPIView):
@@ -144,6 +154,7 @@ class AccountListAPIView(generics.ListAPIView):
 class AddTeamAPIView(generics.CreateAPIView):
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
+    permission_classes = [IsAdminUser]
 
 
 class TeamListAPIView(generics.ListAPIView):
@@ -155,3 +166,4 @@ class TeamRUDAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
     lookup_field = 'pk'
+    permission_classes = [IsAdminUser]

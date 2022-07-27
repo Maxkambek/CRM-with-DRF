@@ -124,3 +124,5 @@ class SendTaskAPIView(generics.ListAPIView):
     def get_queryset(self):
         qs = super().get_queryset().filter(receiver_id=self.request.user.id)
         return qs
+
+

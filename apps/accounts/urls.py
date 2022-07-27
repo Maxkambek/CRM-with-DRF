@@ -7,7 +7,7 @@ urlpatterns = [
     path('logout/', views.LogoutView.as_view()),
     path('verify-email/', views.EmailVerificationView.as_view(), name='verify_email'),
     path('reset-password/', views.ResetPasswordView.as_view()),
-    path('set-password-confirm/<str:uidb64>/<str:token>/', views.PasswordTokenCheckView.as_view()),
+    path('set-password-confirm/', views.PasswordTokenCheckView.as_view()),
     path('set-password-completed/', views.SetPasswordCompletedView.as_view()),
     path('profile/<str:email>/', views.MyAccountAPIView.as_view()),
     path('create-team/', views.AddTeamAPIView.as_view()),

@@ -10,13 +10,13 @@ from apps.tasks.permissions import IsAdminUser
 class NotificationCreateAPIView(generics.CreateAPIView):
     queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsAdminUser]
 
 
 class NotificationListAPIView(generics.ListAPIView):
     queryset = Notification.objects.all()
     serializer_class = NotificationListSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         qs = super().get_queryset().filter(is_read=False)
